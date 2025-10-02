@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ProductAPI.Models;
 
 namespace ProductAPI.Controller
@@ -9,29 +10,36 @@ namespace ProductAPI.Controller
     public class ProductsController : ControllerBase
     {
 
-        private  static List<Product>? _products;
-        public ProductsController()
+        private  readonly ProductsContext _context;
+        public ProductsController(ProductsContext context)
         {
-            _products =
-            [
-                new Product { ProductId = 1, ProductName = "IPhone 11", Price = 25000, IsActive = true },
-                new Product{ProductId = 2, ProductName = "IPhone 12", Price = 35000, IsActive = true},
-                new Product{ProductId = 3, ProductName = "IPhone 13", Price = 45000, IsActive = true},
-                new Product{ProductId = 4, ProductName = "IPhone 14", Price = 55000, IsActive = true},
-            ];
-            
-            
+            _context = context;
         }
         [HttpGet]
-        public List<Product> GetProducts()
+        public async Task<IActionResult> GetProducts()
         {
-            return _products == null ? new List<Product>() : _products;
+            if (await _context.Products.ToListAsync() == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(await _context.Products.ToListAsync());
         }
 
         [HttpGet("{id}")]
-        public Product GetProduct(int id)
+        public async Task<IActionResult> GetProduct(int? id)
         {
-            return _products?.FirstOrDefault(x => x.ProductId == id) ?? new Product();
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var p = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == id);
+
+            if (p == null)
+            {
+                return NotFound();
+            }
+            return Ok(p);
         }
 
     }
