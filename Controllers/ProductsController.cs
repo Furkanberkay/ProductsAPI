@@ -10,7 +10,7 @@ namespace ProductAPI.Controller
     public class ProductsController : ControllerBase
     {
 
-        private  readonly ProductsContext _context;
+        private readonly ProductsContext _context;
         public ProductsController(ProductsContext context)
         {
             _context = context;
@@ -40,6 +40,16 @@ namespace ProductAPI.Controller
                 return NotFound();
             }
             return Ok(p);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateProduct(Product entity)
+        {
+            _context.Products.Add(entity);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetProduct), new { entity.ProductId }, entity);
+
         }
 
     }
