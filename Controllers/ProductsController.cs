@@ -51,7 +51,7 @@ namespace ProductAPI.Controller
             return CreatedAtAction(nameof(GetProduct), new { id = entity.ProductId }, entity);
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, Product entity)
         {
             if (id != entity.ProductId)
@@ -69,6 +69,35 @@ namespace ProductAPI.Controller
             product.ProductName = entity.ProductName;
             product.Price = entity.Price;
             product.IsActive = entity.IsActive;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(int? id)
+        {
+            if (id == null)
+            {
+                return BadRequest();
+            }
+
+            var product = await _context.Products.FirstOrDefaultAsync(i => i.ProductId == id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            _context.Products.Remove(product);
 
             try
             {
